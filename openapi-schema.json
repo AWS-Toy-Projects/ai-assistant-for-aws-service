@@ -1,0 +1,71 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AWS Service Info API",
+    "version": "1.0.0",
+    "description": "API for retrieving information about AWS services"
+  },
+  "paths": {
+    "/getServiceInfo": {
+      "post": {
+        "summary": "Get information about an AWS service",
+        "operationId": "getServiceInfo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "serviceName": {
+                    "type": "string",
+                    "description": "Name of the AWS service"
+                  }
+                },
+                "required": ["serviceName"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "serviceName": {
+                      "type": "string",
+                      "description": "Name of the AWS service"
+                    },
+                    "information": {
+                      "type": "string",
+                      "description": "Information about the AWS service"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  bedrock-agent-sample
+  
+  Sample SAM Template for a Bedrock Agent with Lambda integration
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 128
+    Tracing: Active
+    Runtime: python3.11
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        LOG_LEVEL: INFO
+
+Resources:
+  BedrockAgentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Policies:
+        - AmazonBedrockFullAccess
+        - AWSLambdaBasicExecutionRole
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /agent
+            Method: post
+
+  BedrockAgentPermission:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonBedrockFullAccess'
+
+  BedrockAgentResource:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: SampleAgent
+      AgentResourceRoleArn: !GetAtt BedrockAgentPermission.Arn
+      Description: A sample agent created with SAM
+      FoundationModel: anthropic.claude-3-sonnet-20240229-v1:0
+      Instruction: >
+        You are a helpful assistant that provides information about AWS services.
+        When asked about AWS services, provide concise and accurate information.
+      ActionGroups:
+        - ActionGroupName: SampleActionGroup
+          Description: Sample action group for demonstration
+          ActionGroupExecutor:
+            Lambda: !GetAtt BedrockAgentFunction.Arn
+
+Outputs:
+  BedrockAgentFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt BedrockAgentFunction.Arn
+  BedrockAgentApi:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/agent/"
+  BedrockAgentId:
+    Description: "Bedrock Agent ID"
+    Value: !Ref BedrockAgentResource
