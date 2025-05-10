@@ -4,7 +4,7 @@ This project demonstrates how to create an Amazon Bedrock Agent using AWS Server
 
 ## Architecture
 
-![Architecture Diagram](https://via.placeholder.com/800x400?text=Bedrock+Agent+Architecture)
+![Architecture Diagram](architecture.png)
 
 The project includes:
 - Amazon Bedrock Agent with a custom action group
