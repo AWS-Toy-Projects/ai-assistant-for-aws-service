@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+
 import boto3
 from botocore.exceptions import ClientError
 
@@ -32,6 +33,7 @@ def lambda_handler(event, context):
         api_path = event.get('apiPath', '')
         parameters = event.get('parameters', [])
         request_body = event.get('requestBody', {})
+        prompt = request_body.get('prompt', '')
         
         # Convert parameters to a more usable dictionary format
         param_dict = {}
@@ -46,7 +48,7 @@ def lambda_handler(event, context):
         if action_group == "SampleActionGroup":
             if api_path == "/getServiceInfo":
                 service_name = param_dict.get('serviceName', '')
-                return get_service_info(service_name)
+                return get_service_info(prompt)
         
         # Default response if no matching action is found
         return {
@@ -63,7 +65,7 @@ def lambda_handler(event, context):
             }
         }
 
-def get_service_info(service_name):
+def get_service_info(prompt):
     """
     Get information about an AWS service using Bedrock model.
     
@@ -75,7 +77,6 @@ def get_service_info(service_name):
     """
     try:
         # Use Bedrock model to get information about the service
-        prompt = f"Provide a brief description of the AWS service: {service_name}. Include its main features and common use cases."
         
         response = bedrock_runtime.invoke_model(
             modelId="anthropic.claude-3-sonnet-20240229-v1:0",
@@ -96,7 +97,7 @@ def get_service_info(service_name):
         
         return {
             "response": {
-                "serviceName": service_name,
+                "prompt": prompt,
                 "information": service_info
             }
         }
@@ -105,6 +106,6 @@ def get_service_info(service_name):
         logger.error(f"Error invoking Bedrock model: {str(e)}")
         return {
             "response": {
-                "error": f"Failed to get information for {service_name}: {str(e)}"
+                "error": f"Failed to get information: {str(e)}"
             }
         }
